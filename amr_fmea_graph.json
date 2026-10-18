@@ -1,0 +1,210 @@
+{
+  "nodes": [
+    {
+      "id": "Jetson_Main_Compute",
+      "type": "Hardware",
+      "description": "Central processing unit running navigation stacks"
+    },
+    {
+      "id": "LiDAR_Sensor",
+      "type": "Hardware",
+      "description": "360-degree laser scanner for obstacle detection"
+    },
+    {
+      "id": "Depth_Camera",
+      "type": "Hardware",
+      "description": "Front-facing 3D camera for semantic mapping"
+    },
+    {
+      "id": "BMS_Battery_Pack",
+      "type": "Hardware",
+      "description": "Battery Management System and LiFePO4 cells"
+    },
+    {
+      "id": "Left_Motor_Driver",
+      "type": "Hardware",
+      "description": "H-bridge controller for the left wheel motor"
+    },
+    {
+      "id": "Right_Motor_Driver",
+      "type": "Hardware",
+      "description": "H-bridge controller for the right wheel motor"
+    },
+    {
+      "id": "Rail_24V_Power",
+      "type": "Electrical",
+      "description": "High-power rail driving the wheel motors"
+    },
+    {
+      "id": "Rail_5V_Power",
+      "type": "Electrical",
+      "description": "Low-power rail supplying logic boards and sensors"
+    },
+    {
+      "id": "CAN_Bus_Network",
+      "type": "Bus",
+      "description": "Controller Area Network for motor driver telemetry"
+    },
+    {
+      "id": "ROS2_Internal_Bus",
+      "type": "Software_Bus",
+      "description": "Internal inter-process communication topics"
+    },
+    {
+      "id": "LiDAR_Dust_Occlusion",
+      "type": "Failure_Mode",
+      "description": "Dust or debris blocking the laser transceiver"
+    },
+    {
+      "id": "Motor_Overcurrent_Fault",
+      "type": "Failure_Mode",
+      "description": "Wheel drawing excessive current due to mechanical jam"
+    },
+    {
+      "id": "Battery_Undervoltage",
+      "type": "Failure_Mode",
+      "description": "Voltage drops below safe cell thresholds"
+    },
+    {
+      "id": "CAN_Bus_Timeout",
+      "type": "Failure_Mode",
+      "description": "Dropped data packets between compute and drivers"
+    },
+    {
+      "id": "Compute_Thermal_Throttling",
+      "type": "Failure_Mode",
+      "description": "CPU core downclocks due to excessive heat"
+    },
+    {
+      "id": "Camera_Frame_Drop",
+      "type": "Failure_Mode",
+      "description": "USB bus overflow causing lost perception data"
+    },
+    {
+      "id": "Emergency_Brake_Trigger",
+      "type": "Mitigation",
+      "description": "Hardware circuit cutting power to motor brakes"
+    },
+    {
+      "id": "Safe_Stop_State",
+      "type": "Effect",
+      "description": "Robot completely halts and flags operational failure"
+    },
+    {
+      "id": "Speed_Reduction_Command",
+      "type": "Mitigation",
+      "description": "Software-forced ceiling on maximum velocity"
+    },
+    {
+      "id": "Node_Restart_Attempt",
+      "type": "Mitigation",
+      "description": "Process supervisor attempts to restart dead drivers"
+    }
+  ],
+  "relationships": [
+    {
+      "source": "BMS_Battery_Pack",
+      "target": "Rail_24V_Power",
+      "type": "SUPPLIES"
+    },
+    {
+      "source": "BMS_Battery_Pack",
+      "target": "Rail_5V_Power",
+      "type": "SUPPLIES"
+    },
+    {
+      "source": "Rail_24V_Power",
+      "target": "Left_Motor_Driver",
+      "type": "POWERS"
+    },
+    {
+      "source": "Rail_24V_Power",
+      "target": "Right_Motor_Driver",
+      "type": "POWERS"
+    },
+    {
+      "source": "Rail_5V_Power",
+      "target": "Jetson_Main_Compute",
+      "type": "POWERS"
+    },
+    {
+      "source": "Rail_5V_Power",
+      "target": "LiDAR_Sensor",
+      "type": "POWERS"
+    },
+    {
+      "source": "Jetson_Main_Compute",
+      "target": "Left_Motor_Driver",
+      "type": "CONTROLS_VIA",
+      "bus": "CAN_Bus_Network"
+    },
+    {
+      "source": "Jetson_Main_Compute",
+      "target": "Right_Motor_Driver",
+      "type": "CONTROLS_VIA",
+      "bus": "CAN_Bus_Network"
+    },
+    {
+      "source": "LiDAR_Sensor",
+      "target": "Jetson_Main_Compute",
+      "type": "FEEDS_DATA_VIA",
+      "bus": "ROS2_Internal_Bus"
+    },
+    {
+      "source": "Depth_Camera",
+      "target": "Jetson_Main_Compute",
+      "type": "FEEDS_DATA_VIA",
+      "bus": "ROS2_Internal_Bus"
+    },
+    {
+      "source": "LiDAR_Sensor",
+      "target": "LiDAR_Dust_Occlusion",
+      "type": "VULNERABLE_TO"
+    },
+    {
+      "source": "Left_Motor_Driver",
+      "target": "Motor_Overcurrent_Fault",
+      "type": "VULNERABLE_TO"
+    },
+    {
+      "source": "Right_Motor_Driver",
+      "target": "Motor_Overcurrent_Fault",
+      "type": "VULNERABLE_TO"
+    },
+    {
+      "source": "BMS_Battery_Pack",
+      "target": "Battery_Undervoltage",
+      "type": "VULNERABLE_TO"
+    },
+    {
+      "source": "CAN_Bus_Network",
+      "target": "CAN_Bus_Timeout",
+      "type": "VULNERABLE_TO"
+    },
+    {
+      "source": "LiDAR_Dust_Occlusion",
+      "target": "Speed_Reduction_Command",
+      "type": "TRIGGERS"
+    },
+    {
+      "source": "Motor_Overcurrent_Fault",
+      "target": "Emergency_Brake_Trigger",
+      "type": "TRIGGERS"
+    },
+    {
+      "source": "Battery_Undervoltage",
+      "target": "Emergency_Brake_Trigger",
+      "type": "TRIGGERS"
+    },
+    {
+      "source": "CAN_Bus_Timeout",
+      "target": "Node_Restart_Attempt",
+      "type": "TRIGGERS"
+    },
+    {
+      "source": "Emergency_Brake_Trigger",
+      "target": "Safe_Stop_State",
+      "type": "FORCES"
+    }
+  ]
+}
